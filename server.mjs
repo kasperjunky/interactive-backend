@@ -2,11 +2,19 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
+
+// Enable CORS and restrict to specific origins
+app.use(
+  cors({
+    origin: ['http://localhost:8000', 'https://your-frontend-live-url.com'], // Replace with your live frontend URL
+  })
+);
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -30,7 +38,7 @@ app.post('/api/generate', async (req, res) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Switched from gpt-4 to gpt-3.5-turbo
+        model: 'gpt-3.5-turbo', // Use "gpt-4" if your account has access
         messages,
       }),
     });
