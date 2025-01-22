@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 // Enable CORS and restrict to specific origins
 app.use(
   cors({
-    origin: ['http://localhost:8000', 'https://your-frontend-live-url.com'], // Replace with your live frontend URL
+    origin: ['http://localhost:8000', 'https://interactive-backend.onrender.com'], // Replace with your live frontend URL
   })
 );
 
