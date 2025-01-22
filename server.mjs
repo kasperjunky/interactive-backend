@@ -13,7 +13,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 // Debugging: Check if the API key is loaded
 if (!OPENAI_API_KEY) {
   console.error('Error: OpenAI API key is missing!');
-  process.exit(1); // Exit the process if the key is not set
+  process.exit(1); // Exit if the key is not found
 } else {
   console.log('OpenAI API key is loaded successfully.');
 }
@@ -30,7 +30,7 @@ app.post('/api/generate', async (req, res) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4', // Use "gpt-3.5-turbo" if you don't have access to GPT-4
+        model: 'gpt-3.5-turbo', // Switched from gpt-4 to gpt-3.5-turbo
         messages,
       }),
     });
