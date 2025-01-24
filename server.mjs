@@ -38,21 +38,22 @@ app.post('/api/generate', async (req, res) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Use "gpt-4" if your account has access
+        model: 'gpt-3.5-turbo', // Adjust model if needed
         messages,
       }),
     });
 
     const data = await response.json();
+    console.log('OpenAI Response:', data); // Log the full response for debugging
+
     if (response.ok) {
-      console.log('OpenAI response received successfully.');
       res.json(data);
     } else {
-      console.error('OpenAI API Error:', data);
-      res.status(response.status).json({ error: data });
+      console.error('OpenAI API Error:', data.error); // Log error details
+      res.status(response.status).json({ error: data.error });
     }
   } catch (error) {
-    console.error('Internal Server Error:', error);
+    console.error('Server Error:', error); // Log server-side errors
     res.status(500).json({ error: 'Internal server error' });
   }
 });
