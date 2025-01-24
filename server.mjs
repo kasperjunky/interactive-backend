@@ -20,19 +20,22 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // Debugging: Check if the API key is loaded
 if (!OPENAI_API_KEY) {
-  console.error('Error: OpenAI API key is missing on Render!');
+  console.error('Error: OpenAI API key is missing!');
   process.exit(1); // Exit if the key is not found
 } else {
-  console.log('OpenAI API key is loaded successfully on Render:', OPENAI_API_KEY.substring(0, 5) + '*****');
+  console.log('OpenAI API key is loaded successfully:', OPENAI_API_KEY.substring(0, 5) + '*****');
 }
 
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
 
-  try {
-    console.log('Received request with messages:', messages); // Debug incoming messages
-    console.log('Sending request to OpenAI...');
+  // Log incoming request details for debugging
+  console.log('Received request at /api/generate');
+  console.log('Request Headers:', req.headers);
+  console.log('Request Body:', req.body);
 
+  try {
+    console.log('Sending request to OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -40,18 +43,18 @@ app.post('/api/generate', async (req, res) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Or gpt-4 if accessible
+        model: 'gpt-3.5-turbo', // Or 'gpt-4' if accessible
         messages,
       }),
     });
 
     const data = await response.json();
-    console.log('OpenAI API Response:', data); // Debug OpenAI response
+    console.log('OpenAI Response:', data); // Log OpenAI response for debugging
 
     if (response.ok) {
       res.json(data);
     } else {
-      console.error('OpenAI API Error:', data.error); // Log error details from OpenAI
+      console.error('OpenAI API Error:', data.error); // Log OpenAI API error details
       res.status(response.status).json({ error: data.error });
     }
   } catch (error) {
