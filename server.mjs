@@ -9,10 +9,10 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 
-// Enable CORS and restrict to specific origins
+// Enable CORS and allow requests from specific origins
 app.use(
   cors({
-    origin: ['http://localhost:8000', 'https://interactive-backend.onrender.com'], // Replace with your live frontend URL
+    origin: ['https://kasperjunky.github.io', 'http://localhost:8000'], // Allow GitHub Pages and local testing
   })
 );
 
