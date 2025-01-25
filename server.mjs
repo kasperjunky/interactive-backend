@@ -9,36 +9,42 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 
-// Enable CORS for frontend with preflight support
+// Enable CORS for frontend
 app.use(
   cors({
-    origin: ['https://kasperjunky.github.io', 'http://localhost:8000'], // Allow GitHub Pages and local testing
-    methods: ['GET', 'POST', 'OPTIONS'], // Allow these methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
+    origin: ['https://kasperjunky.github.io', 'http://localhost:8000'], // GitHub Pages and local testing
   })
 );
 
-// Handle preflight requests for all routes
-app.options('*', cors());
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Check if the API key is loaded
-if (!OPENAI_API_KEY) {
-  console.error('Error: OpenAI API key is missing!');
-  process.exit(1); // Exit if the key is not found
-} else {
-  console.log('OpenAI API key loaded successfully.');
-}
-
-// POST endpoint to generate insights
 app.post('/api/generate', async (req, res) => {
-  const { messages } = req.body;
+  const { language, answers } = req.body;
+
+  if (!answers || !Array.isArray(answers)) {
+    return res.status(400).json({ error: "Invalid or missing 'answers' parameter." });
+  }
+
+  const messages = [
+    {
+      role: 'system',
+      content:
+        language === 'he'
+          ? 'אתה עוזר שמספק תובנות עמוקות לגבי סיפורי חיים בהתבסס על תשובות שאלון של המשתמש.'
+          : 'You are a helpful assistant that provides deep insights about life stories based on user questionnaire answers.',
+    },
+    {
+      role: 'user',
+      content:
+        language === 'he'
+          ? `הנה התשובות לשאלון: ${answers.join(', ')}. אנא ספק תובנות על סיפור חייו של משתמש זה.`
+          : `Here are the answers to the questionnaire: ${answers.join(
+              ', '
+            )}. Please provide insights about this user’s life story.`,
+    },
+  ];
 
   try {
-    console.log('Received request with messages:', messages); // Debug incoming messages
-    console.log('Sending request to OpenAI...');
-
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -46,28 +52,34 @@ app.post('/api/generate', async (req, res) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Replace with your model if needed
+        model: 'gpt-3.5-turbo', // Use GPT-3.5 to avoid access issues
         messages,
       }),
     });
 
     const data = await response.json();
-    console.log('OpenAI API Response:', data); // Debug OpenAI response
 
     if (response.ok) {
-      res.json(data);
+      res.json({
+        storySummary: data.choices[0].message.content,
+        encouragingRewrite: "Rewrite your story in a positive and empowering way here.",
+        practicalAdvice: [
+          "Embrace opportunities for growth.",
+          "Surround yourself with positive influences.",
+          "Reflect on past experiences to find strength.",
+        ],
+      });
     } else {
-      console.error('OpenAI API Error:', data.error); // Log error details from OpenAI
+      console.error('OpenAI API Error:', data.error);
       res.status(response.status).json({ error: data.error });
     }
   } catch (error) {
-    console.error('Server Error:', error); // Log server-side errors
+    console.error('Server Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Start the server
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
