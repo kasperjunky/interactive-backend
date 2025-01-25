@@ -37,10 +37,8 @@ app.post('/api/generate', async (req, res) => {
       role: 'user',
       content:
         language === 'he'
-          ? `הנה התשובות לשאלון: ${answers.join(', ')}. אנא ספק תובנות על סיפור חייו של משתמש זה.`
-          : `Here are the answers to the questionnaire: ${answers.join(
-              ', '
-            )}. Please provide insights about this user’s life story.`,
+          ? `הנה התשובות לשאלון: ${answers.join(", ")}. אנא ספק תובנות על סיפור חייו של משתמש זה, כתוב אותו באופן חיובי ומעצים, ופרט דרכים מעשיות לשיפור.`
+          : `Here are the answers to the questionnaire: ${answers.join(", ")}. Please provide insights about this user’s life story, rewrite it positively and empowering, and suggest practical ways for improvement.`,
     },
   ];
 
@@ -52,7 +50,7 @@ app.post('/api/generate', async (req, res) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Use GPT-3.5 to avoid access issues
+        model: 'gpt-3.5-turbo',
         messages,
       }),
     });
@@ -60,14 +58,15 @@ app.post('/api/generate', async (req, res) => {
     const data = await response.json();
 
     if (response.ok) {
+      const content = data.choices[0].message.content;
+      const [storySummary, encouragingRewrite, ...practicalAdvice] = content.split('\n').filter(Boolean);
+
       res.json({
-        storySummary: data.choices[0].message.content,
-        encouragingRewrite: "Rewrite your story in a positive and empowering way here.",
-        practicalAdvice: [
-          "Embrace opportunities for growth.",
-          "Surround yourself with positive influences.",
-          "Reflect on past experiences to find strength.",
-        ],
+        storySummary: storySummary || 'No story summary available.',
+        encouragingRewrite: encouragingRewrite || 'No encouraging rewrite available.',
+        practicalAdvice: practicalAdvice.length
+          ? practicalAdvice.map((advice) => advice.trim())
+          : ['No practical advice available.'],
       });
     } else {
       console.error('OpenAI API Error:', data.error);
